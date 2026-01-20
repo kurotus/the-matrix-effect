@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>kurotus.com</title>
+    <style>
+        /* --- RESET --- */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            height: 100vh;
+            width: 100vw;
+            background-color: #000;
+            overflow: hidden; /* Prevents scrollbars */
+            font-family: 'Courier New', Courier, monospace;
+        }
+
+        /* --- BACKGROUND LAYER (CANVAS) --- */
+        canvas {
+            display: block;
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1; /* Sits behind the text */
+        }
+
+        /* --- FOREGROUND LAYER (STATIC TEXT) --- */
+        .center-container {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%); /* Perfect centering */
+            z-index: 10; /* Sits on top of the rain */
+            text-align: center;
+            
+            /* semi-transparent black box for readability */
+            background: rgba(0, 0, 0, 0.75);
+            padding: 2rem 3rem;
+            border: 1px solid #0F0;
+            box-shadow: 0 0 15px #0F0, inset 0 0 15px rgba(0, 255, 0, 0.2);
+            backdrop-filter: blur(3px);
+        }
+
+        .brand-text {
+            color: #ffffff;
+            font-size: 4rem;
+            font-weight: bold;
+            letter-spacing: 4px;
+            text-transform: lowercase;
+            
+            /* The Matrix Glow Effect */
+            text-shadow: 
+                0 0 5px #fff,
+                0 0 10px #fff,
+                0 0 20px #0F0,
+                0 0 30px #0F0,
+                0 0 40px #0F0;
+        }
+
+        /* Mobile Responsive Adjustments */
+        @media (max-width: 600px) {
+            .brand-text {
+                font-size: 2rem;
+            }
+            .center-container {
+                padding: 1.5rem 2rem;
+                width: 90%;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- The Matrix Rain Canvas -->
+    <canvas id="matrix"></canvas>
+
+    <!-- The Static Text Overlay -->
+    <div class="center-container">
+        <h1 class="brand-text">kurotus.com</h1>
+    </div>
+
+    <!-- SCRIPT -->
+    <script>
+        const canvas = document.getElementById('matrix');
+        const ctx = canvas.getContext('2d');
+
+        // Set canvas to full screen
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        // Characters to use in the rain (Katakana + Latin + Numbers)
+        const katakana = 'アァカサタナハマヤャラワガザダバパイィキシチニヒミリヰギジヂビピウゥクスツヌフムユュルグズブヅプエェケセテネヘメレヱゲゼデベペオォコソトノホモヨョロヲゴゾドボポヴッン';
+        const latin = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+        const nums = '0123456789';
+        
+        const alphabet = katakana + latin + nums;
+
+        const fontSize = 16;
+        const columns = canvas.width / fontSize; // Number of columns for the rain
+
+        // Array of drops - one per column
+        const drops = [];
+
+        // Initialize all drops to start at the top (y=1)
+        for (let x = 0; x < columns; x++) {
+            drops[x] = 1;
+        }
+
+        const draw = () => {
+            // Black BG for the canvas
+            // Translucent BG to show trail effect
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            ctx.fillStyle = '#0F0'; // Matrix Green text
+            ctx.font = fontSize + 'px monospace';
+
+            // Loop over drops
+            for (let i = 0; i < drops.length; i++) {
+                // Get a random character to print
+                const text = alphabet.charAt(Math.floor(Math.random() * alphabet.length));
+                
+                // x = i * fontSize, y = value of drops[i] * fontSize
+                ctx.fillText(text, i * fontSize, drops[i] * fontSize);
+
+                // Sending the drop back to the top randomly after it has crossed the screen
+                // Adding a randomness to the reset to make the drops scattered on the Y axis
+                if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) {
+                    drops[i] = 0;
+                }
+
+                // Increment Y coordinate
+                drops[i]++;
+            }
+        };
+
+        // Run the draw function every 30 milliseconds
+        setInterval(draw, 30);
+
+        // Handle Window Resize
+        window.addEventListener('resize', () => {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            // Re-calculate columns creates a glitchy effect or reset logic could be added here
+            // For simplicity, we just let the canvas resize, though drops might lose position slightly
+        });
+    </script>
+</body>
+</html>
